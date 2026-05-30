@@ -26,18 +26,6 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    // Direct API test
-    const testAPI = async () => {
-      try {
-        const response = await fetch('http://localhost:3002/api/v1/countries');
-        const data = await response.json();
-        console.log('Direct API test:', data);
-      } catch (error) {
-        console.error('Direct API error:', error);
-      }
-    };
-    testAPI();
-    
     dispatch(fetchCountries());
   }, [dispatch]);
 
@@ -50,7 +38,7 @@ export default function RegisterPage() {
       })).unwrap();
       router.push('/dashboard');
     } catch (err) {
-      console.error('Registration failed:', err);
+      // error handled by Redux state
     }
   };
 
@@ -162,23 +150,11 @@ export default function RegisterPage() {
                 required
               >
                 <option value="">Select a country</option>
-                {(() => {
-                  console.log('Countries in render:', countries, 'Type:', typeof countries, 'Array?', Array.isArray(countries));
-                  console.log('Countries state keys:', countries ? Object.keys(countries) : 'null');
-                  
-                  // Handle if countries is nested in an object
-                  const countriesArray = Array.isArray(countries) ? countries : 
-                                       countries?.countries ? countries.countries :
-                                       countries?.data ? countries.data : [];
-                  
-                  console.log('Final countries array:', countriesArray);
-                  
-                  return Array.isArray(countriesArray) && countriesArray.map((country) => (
-                    <option key={country.id} value={country.id}>
-                      {country.name}
-                    </option>
-                  ));
-                })()}
+                {Array.isArray(countries) && countries.map((country) => (
+                  <option key={country.id} value={country.id}>
+                    {country.name}
+                  </option>
+                ))}
               </select>
             </div>
 

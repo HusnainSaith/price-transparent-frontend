@@ -6,6 +6,7 @@ import {
   getProductByIdAPI,
   getPriceAnalysisAPI,
   triggerPriceSearchAPI,
+  deleteProductAPI,
 } from './productsAPI';
 import type {
   ProductsState,
@@ -115,6 +116,25 @@ export const getPriceAnalysis = createAsyncThunk<
       return response;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to get price analysis');
+    }
+  }
+);
+
+/**
+ * Delete product
+ */
+export const deleteProduct = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: string }
+>(
+  'products/delete',
+  async (id, { rejectWithValue }) => {
+    try {
+      await deleteProductAPI(id);
+      return id;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to delete product');
     }
   }
 );
@@ -251,6 +271,19 @@ const productsSlice = createSlice({
       .addCase(getPriceAnalysis.rejected, (state, action) => {
         state.analyzing = false;
         state.error = action.payload || 'Failed to get price analysis';
+      });
+
+    // Delete Product
+    builder
+      .addCase(deleteProduct.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(deleteProduct.fulfilled, (state, action) => {
+        state.products = state.products.filter(p => p.id !== action.payload);
+        state.error = null;
+      })
+      .addCase(deleteProduct.rejected, (state, action) => {
+        state.error = action.payload || 'Failed to delete product';
       });
 
     // Trigger Price Search

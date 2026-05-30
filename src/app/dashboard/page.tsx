@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectIsAuthenticated, selectIsInitialized, selectUser } from '@/store/auth';
-import { fetchUserProducts, selectAllProducts, selectProductsLoading } from '@/store/products';
-import { Plus, Package, TrendingDown, DollarSign } from 'lucide-react';
+import { fetchUserProducts, selectAllProducts, selectProductsLoading, deleteProduct } from '@/store/products';
+import { Plus, Package, TrendingDown, DollarSign, Trash2 } from 'lucide-react';
 
 // Skeleton Loading Component
 const SkeletonCard = () => (
@@ -41,6 +41,19 @@ export default function DashboardPage() {
   const user = useAppSelector(selectUser);
   const products = useAppSelector(selectAllProducts);
   const loading = useAppSelector(selectProductsLoading);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (e: React.MouseEvent, productId: string, productName: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm(`"${productName}" ko delete karna chahte hain?`)) return;
+    setDeletingId(productId);
+    try {
+      await dispatch(deleteProduct(productId));
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   useEffect(() => {
     if (isInitialized && !isAuthenticated) {
@@ -53,6 +66,38 @@ export default function DashboardPage() {
       dispatch(fetchUserProducts());
     }
   }, [isAuthenticated, dispatch]);
+
+  const totalSavings = useMemo(() => {
+    let savings = 0;
+    for (const p of products) {
+      const prices = (p as any).priceHistory;
+      if (Array.isArray(prices) && prices.length > 1) {
+        const nums = prices.map((ph: any) => Number(ph.price)).filter(Boolean);
+        if (nums.length > 1) {
+          savings += Math.max(...nums) - Math.min(...nums);
+        }
+      }
+    }
+    return Math.round(savings);
+  }, [products]);
+
+  const avgSaved = useMemo(() => {
+    if (products.length === 0) return 0;
+    let total = 0;
+    let count = 0;
+    for (const p of products) {
+      const prices = (p as any).priceHistory;
+      if (Array.isArray(prices) && prices.length > 1) {
+        const nums = prices.map((ph: any) => Number(ph.price)).filter(Boolean);
+        if (nums.length > 1) {
+          const max = Math.max(...nums);
+          const min = Math.min(...nums);
+          if (max > 0) { total += ((max - min) / max) * 100; count++; }
+        }
+      }
+    }
+    return count > 0 ? Math.round(total / count) : 0;
+  }, [products]);
 
   if (!isInitialized || !isAuthenticated) {
     return null;
@@ -104,7 +149,7 @@ export default function DashboardPage() {
                       Total Savings
                     </p>
                     <p className="text-3xl font-bold text-success">
-                      ${Math.round(Math.random() * 500)}
+                      ${totalSavings}
                     </p>
                   </div>
                   <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center">
@@ -120,7 +165,7 @@ export default function DashboardPage() {
                       Avg Price Saved
                     </p>
                     <p className="text-3xl font-bold text-brand-primary">
-                      {products.length > 0 ? Math.round((Math.random() * 15) + 5) : 0}%
+                      {avgSaved}%
                     </p>
                   </div>
                   <div className="w-12 h-12 bg-brand-primary/10 rounded-lg flex items-center justify-center">
@@ -181,10 +226,20 @@ export default function DashboardPage() {
                     <h3 className="font-semibold text-light-text-primary dark:text-dark-text-primary line-clamp-2 flex-1 group-hover:text-brand-primary transition-colors">
                       {product.name}
                     </h3>
+                    <button
+                      onClick={(e) => handleDelete(e, product.id, product.name)}
+                      disabled={deletingId === product.id}
+                      className="ml-2 p-1.5 text-light-text-muted dark:text-dark-text-muted hover:text-error hover:bg-error/10 rounded-lg transition-colors flex-shrink-0"
+                      title="Delete product"
+                    >
+                      {deletingId === product.id
+                        ? <span className="w-4 h-4 block border-2 border-error/40 border-t-error rounded-full animate-spin" />
+                        : <Trash2 className="w-4 h-4" />}
+                    </button>
                   </div>
                   <div className="space-y-2 text-sm mb-4">
                     <p className="text-light-text-secondary dark:text-dark-text-secondary">
-                      <span className="font-medium">Category:</span> {product.category.name}
+                      <span className="font-medium">Category:</span> {product.category?.name}
                     </p>
                     <p className="text-light-text-secondary dark:text-dark-text-secondary">
                       <span className="font-medium">Size:</span> {product.size}

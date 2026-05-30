@@ -12,10 +12,20 @@ interface Product {
   priceHistory: Array<{
     id: string;
     price: number;
+    currency: string;
     storeName: string;
+    storeUrl?: string;
     scrapedAt?: string;
     createdAt?: string;
   }>;
+}
+
+function formatPrice(price: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'USD' }).format(price);
+  } catch {
+    return `${currency} ${price.toFixed(2)}`;
+  }
 }
 
 export default function ProductDetailPage() {
@@ -68,7 +78,7 @@ export default function ProductDetailPage() {
       
         {product.imageUrl && (
           <img 
-            src={product.imageUrl.startsWith('http') ? product.imageUrl : `http://localhost:3002${product.imageUrl}`} 
+            src={product.imageUrl.startsWith('http') ? product.imageUrl : `${(process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api/v1').replace('/api/v1', '')}${product.imageUrl}`} 
             alt={product.name}
             className="w-64 h-64 object-cover rounded-lg mb-6"
           />
@@ -87,12 +97,9 @@ export default function ProductDetailPage() {
               <button
                 onClick={async () => {
                   try {
-                    console.log('Searching prices for product:', params.id);
-                    const response = await axiosInstance.post(`/products/${params.id}/add-sample-prices`);
-                    console.log('Price search response:', response.data);
+                    await axiosInstance.post(`/products/${params.id}/add-sample-prices`);
                     window.location.reload();
                   } catch (err: any) {
-                    console.error('Failed to add sample prices:', err);
                     alert(`Failed to search prices: ${err.response?.data?.message || err.message || 'Unknown error'}`);
                   }
                 }}
@@ -107,23 +114,23 @@ export default function ProductDetailPage() {
             <div className="space-y-4">
               {/* Price Summary */}
               <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg p-4 mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                   <div>
                     <p className="text-sm text-light-text-muted dark:text-dark-text-muted">Lowest Price</p>
                     <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                      ${Math.min(...product.priceHistory.map(p => Number(p.price))).toFixed(2)}
+                      {formatPrice(Math.min(...product.priceHistory.map(p => Number(p.price))), product.priceHistory[0]?.currency || 'USD')}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-light-text-muted dark:text-dark-text-muted">Highest Price</p>
                     <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-                      ${Math.max(...product.priceHistory.map(p => Number(p.price))).toFixed(2)}
+                      {formatPrice(Math.max(...product.priceHistory.map(p => Number(p.price))), product.priceHistory[0]?.currency || 'USD')}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-light-text-muted dark:text-dark-text-muted">Price Difference</p>
                     <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                      ${(Math.max(...product.priceHistory.map(p => Number(p.price))) - Math.min(...product.priceHistory.map(p => Number(p.price)))).toFixed(2)}
+                      {formatPrice(Math.max(...product.priceHistory.map(p => Number(p.price))) - Math.min(...product.priceHistory.map(p => Number(p.price))), product.priceHistory[0]?.currency || 'USD')}
                     </p>
                   </div>
                 </div>
@@ -158,7 +165,7 @@ export default function ProductDetailPage() {
                         index === 0 ? 'text-green-600 dark:text-green-400' : 
                         'text-light-text-primary dark:text-dark-text-primary'
                       }`}>
-                        ${Number(price.price).toFixed(2)}
+                        {price.currency ? formatPrice(Number(price.price), price.currency) : `$${Number(price.price).toFixed(2)}`}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-sm">

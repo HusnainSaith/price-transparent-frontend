@@ -57,10 +57,8 @@ export const loginUser = createAsyncThunk<
       const response = await loginAPI(credentials);
       
       // Save to cookies
-      console.log('Saving token:', response.access_token);
       setAuthToken(response.access_token);
       setAuthUser(response.user);
-      console.log('Token saved, checking:', getAuthToken());
       
       return response;
     } catch (error) {

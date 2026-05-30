@@ -10,13 +10,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Brand colors - Professional blue
+        // Brand colors — Professional Indigo
         brand: {
-          primary: '#4A9FD8',
-          secondary: '#60A5DC',
-          hover: '#3D8BC7',
-          light: '#E0F2FE',
-          dark: '#2D7AB8',
+          primary: '#4f46e5',
+          secondary: '#6366f1',
+          hover: '#4338ca',
+          light: '#eef2ff',
+          dark: '#3730a3',
         },
         // Semantic colors
         success: {

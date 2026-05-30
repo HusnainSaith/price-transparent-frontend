@@ -53,7 +53,15 @@ export const getUserProductsAPI = async (): Promise<Product[]> => {
  */
 export const getProductByIdAPI = async (id: string): Promise<Product> => {
   const response = await axiosInstance.get<Product>(`/products/${id}`);
-  return response.data;
+  return response.data.data || response.data;
+};
+
+/**
+ * Delete product by ID
+ * DELETE /products/:id
+ */
+export const deleteProductAPI = async (id: string): Promise<void> => {
+  await axiosInstance.delete(`/products/${id}`);
 };
 
 /**

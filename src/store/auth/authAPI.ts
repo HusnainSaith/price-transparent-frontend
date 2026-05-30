@@ -16,7 +16,6 @@ const axiosInstance: AxiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = getAuthToken();
-    console.log('Request token:', token);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -47,7 +46,6 @@ axiosInstance.interceptors.response.use(
  */
 export const loginAPI = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   const response = await axiosInstance.post('/auth/login', credentials);
-  console.log('Raw login API response:', response.data);
   return response.data.data || response.data;
 };
 
@@ -56,7 +54,7 @@ export const loginAPI = async (credentials: LoginCredentials): Promise<AuthRespo
  */
 export const registerAPI = async (data: RegisterData): Promise<AuthResponse> => {
   const response = await axiosInstance.post<AuthResponse>('/auth/register', data);
-  return response.data;
+  return response.data.data || response.data;
 };
 
 /**

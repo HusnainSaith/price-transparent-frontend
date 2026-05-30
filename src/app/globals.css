@@ -2,15 +2,47 @@
 
 @layer base {
 
-  /* Custom CSS Variables */
+  /* ── Design Tokens ──────────────────────────────────── */
   :root {
-    --background: #ffffff;
-    --foreground: #0f172a;
+    /* Page & surface */
+    --background:    #f1f5f9;
+    --foreground:    #0f172a;
+    --card-bg:       #ffffff;
+    --card-border:   rgba(15, 23, 42, 0.10);
+    --input-bg:      #f8fafc;
+    --muted:         #64748b;
+    --muted-more:    #94a3b8;
+    --section-alt:   rgba(15, 23, 42, 0.03);
+    /* Brand — rich indigo */
+    --brand-primary: #4f46e5;
+    --brand-hover:   #4338ca;
+    --brand-light:   rgba(79, 70, 229, 0.10);
+    --brand-ring:    rgba(79, 70, 229, 0.25);
+    /* Status */
+    --success:       #10b981;
+    --success-light: rgba(16, 185, 129, 0.12);
+    --error:         #ef4444;
+    --error-light:   rgba(239, 68, 68, 0.10);
   }
 
   .dark {
-    --background: #1a1d2e;
-    --foreground: #ffffff;
+    --background:    #1a1d2e;
+    --foreground:    #f1f5f9;
+    --card-bg:       #24293e;
+    --card-border:   rgba(255, 255, 255, 0.07);
+    --input-bg:      #2d3348;
+    --muted:         #94a3b8;
+    --muted-more:    #64748b;
+    --section-alt:   rgba(255, 255, 255, 0.03);
+    /* Brand — slightly lighter for dark bg */
+    --brand-primary: #818cf8;
+    --brand-hover:   #6366f1;
+    --brand-light:   rgba(129, 140, 248, 0.12);
+    --brand-ring:    rgba(129, 140, 248, 0.25);
+    --success:       #34d399;
+    --success-light: rgba(52, 211, 153, 0.12);
+    --error:         #f87171;
+    --error-light:   rgba(248, 113, 113, 0.10);
   }
 
   html {
@@ -199,4 +231,61 @@
   .preserve-3d {
     transform-style: preserve-3d;
   }
+
+  /* ── Token-based utilities (fix all custom classes in every page) ── */
+
+  /* Brand */
+  .bg-brand-primary          { background-color: var(--brand-primary); }
+  .bg-brand-hover            { background-color: var(--brand-hover); }
+  .bg-brand-secondary        { background-color: var(--brand-hover); }
+  .text-brand-primary        { color: var(--brand-primary); }
+  .text-brand-hover          { color: var(--brand-hover); }
+  .border-brand-primary      { border-color: var(--brand-primary); }
+
+  /* Page backgrounds */
+  .bg-light-bg-primary       { background-color: var(--background); }
+  .bg-dark-bg-primary        { background-color: var(--background); }
+  .bg-light-bg-secondary     { background-color: var(--section-alt); }
+  .bg-dark-bg-secondary      { background-color: var(--section-alt); }
+
+  /* Card / surface */
+  .bg-light-bg-card          { background-color: var(--card-bg); }
+  .bg-dark-bg-card           { background-color: var(--card-bg); }
+  .bg-light-bg-elevated      { background-color: var(--card-bg); }
+  .bg-dark-bg-elevated       { background-color: var(--card-bg); }
+
+  /* Input */
+  .bg-light-bg-input         { background-color: var(--input-bg); }
+  .bg-dark-bg-input          { background-color: var(--input-bg); }
+
+  /* Text */
+  .text-light-text-primary   { color: var(--foreground); }
+  .text-dark-text-primary    { color: var(--foreground); }
+  .text-light-text-secondary { color: var(--muted); }
+  .text-dark-text-secondary  { color: var(--muted); }
+  .text-light-text-muted     { color: var(--muted-more); }
+  .text-dark-text-muted      { color: var(--muted-more); }
+
+  /* Placeholders */
+  .placeholder-light-text-muted::placeholder { color: var(--muted-more); }
+  .placeholder-dark-text-muted::placeholder  { color: var(--muted-more); }
+
+  /* Borders */
+  .border-light-border       { border-color: var(--card-border); }
+  .border-dark-border        { border-color: var(--card-border); }
+
+  /* Status */
+  .text-success              { color: var(--success); }
+  .bg-success                { background-color: var(--success); }
+  .text-error                { color: var(--error); }
+  .border-error              { border-color: var(--error); }
+
+  /* Brand opacity helpers */
+  .bg-brand-primary\/10      { background-color: var(--brand-light); }
+  .bg-success\/10            { background-color: var(--success-light); }
+  .bg-error\/10              { background-color: var(--error-light); }
+  .border-error\/50          { border-color: color-mix(in srgb, var(--error) 50%, transparent); }
+
+  /* Focus ring for inputs */
+  .focus\:border-brand-primary:focus { border-color: var(--brand-primary); }
 }

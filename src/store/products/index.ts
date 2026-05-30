@@ -18,6 +18,7 @@ export {
   fetchProductById,
   getPriceAnalysis,
   triggerPriceSearch,
+  deleteProduct,
   selectProduct,
   clearSelectedProduct,
   clearProductsError,

@@ -56,30 +56,50 @@ export default function NewProductPage() {
     setError(null);
     
     try {
-      const formDataToSend = new FormData();
-      if (imageFile) {
-        formDataToSend.append('image', imageFile);
-      }
-      if (formData.name) {
-        formDataToSend.append('name', formData.name);
-      }
-      formDataToSend.append('categoryId', formData.categoryId);
-      formDataToSend.append('size', formData.size);
+      let product: any;
 
-      const response = await axiosInstance.post('/products/with-image', formDataToSend, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      
-      const product = response.data.data || response.data;
+      if (imageFile) {
+        // With image: use AI-powered endpoint
+        const formDataToSend = new FormData();
+        formDataToSend.append('image', imageFile);
+        if (formData.name) {
+          formDataToSend.append('name', formData.name);
+        }
+        formDataToSend.append('categoryId', formData.categoryId);
+        formDataToSend.append('size', formData.size);
+
+        const response = await axiosInstance.post('/products/with-image', formDataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          timeout: 30000,
+        });
+        product = response.data.data || response.data;
+      } else {
+        // Without image: use standard endpoint
+        if (!formData.name) {
+          setError('Please provide a product name or upload an image');
+          setLoading(false);
+          return;
+        }
+        const response = await axiosInstance.post('/products', {
+          name: formData.name,
+          size: formData.size,
+          categoryId: formData.categoryId,
+        });
+        product = response.data.data || response.data;
+      }
+
       setProductId(product.id);
       setStep(4);
       
-      // Start price search
+      // Search real prices — allow up to 60s for SerpAPI + fallback
       setPriceSearching(true);
       try {
-        await axiosInstance.post(`/products/${product.id}/add-sample-prices`);
-      } catch (err) {
-        console.error('Failed to add sample prices:', err);
+        await axiosInstance.post(`/products/${product.id}/add-sample-prices`, {}, {
+          timeout: 60000,
+        });
+      } catch (err: any) {
+        // Non-critical: prices can still be searched from the product page
+        console.warn('Price search did not complete:', err?.message || 'timeout');
       }
       setPriceSearching(false);
       
